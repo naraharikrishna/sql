@@ -1,0 +1,67 @@
+DECLARE
+		@SeparatorPosition INT
+	  , @ArrayValue NVARCHAR(MAX)
+	  , @Separator CHAR;
+
+	SET @Separator = CHAR(44);		----set @separator = ','
+	SET @SeparatorPosition = NULL;
+	SET @ArrayValue = NULL;
+
+	DECLARE	@TheEmployer TABLE (
+								 [EmployerID] INT INDEX [cxERID] CLUSTERED
+							   , [EmployerCode] NVARCHAR(25)
+							   , [Employer] NVARCHAR(200)
+							   , [EmployerLocation] NVARCHAR(200)
+							   , [EmployerActive] BIT );
+
+	DECLARE	@TheMemberStatus TABLE (
+									 [MemberStatusID] INT INDEX [cxMSID] CLUSTERED
+								   , [MemberStatusCode] NVARCHAR(25)
+								   , [MemberStatus] NVARCHAR(100)
+								   , [MemberStatusActive] BIT );
+
+	WHILE PATINDEX('%' + @Separator + '%', @TheERIDs) <> 0
+		BEGIN
+			SELECT
+				@SeparatorPosition = PATINDEX('%' + @Separator + '%', @TheERIDs);
+			SELECT
+				@ArrayValue = LEFT(@TheERIDs, @SeparatorPosition - 1);
+			INSERT	INTO @TheEmployer
+					( [EmployerID] )
+			VALUES
+					( TRY_CONVERT(INT, @ArrayValue) );
+			SELECT
+				@TheERIDs = STUFF(@TheERIDs, 1, @SeparatorPosition, '');
+		END;
+
+	INSERT	INTO @TheEmployer
+			( [EmployerID] )
+	VALUES
+			( TRY_CONVERT(INT, @TheERIDs) );
+
+/*
+Above: Parsed out the shop IDs
+Below: Parsed out the status IDs
+*/
+
+	SET @SeparatorPosition = NULL;
+	SET @ArrayValue = NULL;
+
+	WHILE PATINDEX('%' + @Separator + '%', @MemberStatus) <> 0
+		BEGIN
+			SELECT
+				@SeparatorPosition = PATINDEX('%' + @Separator + '%', @MemberStatus);
+			SELECT
+				@ArrayValue = LEFT(@MemberStatus, @SeparatorPosition - 1);
+			INSERT	INTO @TheMemberStatus
+					( [MemberStatusID] )
+			VALUES
+					( TRY_CONVERT(INT, @ArrayValue) );
+			SELECT
+				@MemberStatus = STUFF(@MemberStatus, 1, @SeparatorPosition, '');
+		END;
+
+	INSERT	INTO @TheMemberStatus
+			( [MemberStatusID] )
+	VALUES
+			( TRY_CONVERT(INT, @MemberStatus) );
