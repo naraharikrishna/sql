@@ -1,0 +1,32 @@
+USE [Prizm]
+GO
+/****** Object:  UserDefinedFunction [dbo].[fn_Format_Phone]    Script Date: 6/27/2019 12:50:32 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER  FUNCTION [dbo].[fn_Format_Phone]  
+ (  
+ @Phone VARCHAR(30)  
+ )   
+RETURNS VARCHAR(30)  
+AS  
+BEGIN  
+DECLARE @FormattedPhone VARCHAR(50)  
+  
+SET     @Phone = REPLACE(@Phone, '.', '-')   
+SET @FormattedPhone =  
+    CASE  
+      WHEN ISNUMERIC(@Phone) = 1 THEN  
+        CASE  
+          WHEN LEN(@Phone) = 10 THEN '('+SUBSTRING(@Phone, 1, 3)+')'+ ' ' +SUBSTRING(@Phone, 4, 3)+ '-' +SUBSTRING(@Phone, 7, 4)  
+          WHEN LEN(@Phone) = 7  THEN SUBSTRING(@Phone, 1, 3)+ '-' +SUBSTRING(@Phone, 4, 4)  
+          ELSE @Phone  
+        END  
+      WHEN @phone LIKE '[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9][0-9]' THEN '('+SUBSTRING(@Phone, 1, 3)+')'+ ' ' +SUBSTRING(@Phone, 5, 3)+ '-' +SUBSTRING(@Phone, 8, 4)  
+      WHEN @phone LIKE '[0-9][0-9][0-9] [0-9][0-9][0-9] [0-9][0-9][0-9][0-9]' THEN '('+SUBSTRING(@Phone, 1, 3)+')'+ ' ' +SUBSTRING(@Phone, 5, 3)+ '-' +SUBSTRING(@Phone, 9, 4)  
+      WHEN @phone LIKE '[0-9][0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]' THEN '('+SUBSTRING(@Phone, 1, 3)+')'+ ' ' +SUBSTRING(@Phone, 5, 3)+ '-' +SUBSTRING(@Phone, 9, 4)  
+      ELSE @Phone  
+    END  
+RETURN  @FormattedPhone   
+END
