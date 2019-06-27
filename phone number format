@@ -1,0 +1,5 @@
+ concat('Phone: ',
+     CASE WHEN LEN(phone)>3 THEN ISNULL('(' + SUBSTRING(REPLACE(REPLACE(LTRIM(ISNULL(phone, '')), '-', ''), ' ', ''), 1, 3) + ') ' + 
+								SUBSTRING(REPLACE(REPLACE(LTRIM(ISNULL(phone, '')), '-', ''), ' ', ''), 4, 3) + '-' + 
+								SUBSTRING(REPLACE(REPLACE(LTRIM(ISNULL(phone, '')), '-', ''), ' ', ''), 7, 10), '')
+                               ELSE '' end ) ,
