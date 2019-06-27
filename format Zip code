@@ -1,0 +1,6 @@
+CREATE function [dbo].[f_format_zip] (@zip nvarchar(15)) returns nvarchar(15)
+as
+begin
+return (select case 
+When Len(@zip) = 9 Then Left(@zip, 5) + '-' + Right(@zip, 4) Else @zip End 
+) end
