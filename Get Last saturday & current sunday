@@ -1,0 +1,13 @@
+DECLARE @input DATETIME
+--SET @input = '9/9/2012' -- simulates a Sunday
+SET @input = '06/24/2019'
+--start of last week
+SELECT DATEADD(wk, DATEDIFF(wk, 6,CASE DATEPART(dw,@input) WHEN 1 THEN DATEADD(d,-1,@input)
+ELSE @input END ), 0)
+
+--end of last week
+SELECT DATEADD(wk, DATEDIFF(wk, 6, CASE DATEPART(dw,@input) WHEN 1 THEN DATEADD(d,-1,@input)ELSE @input END ), 6)
+  --ssrs expression
+=DateAdd(DateInterval.Day, 2-WeekDay(Today), DateAdd(DateInterval.Day, -7, Today()))
+=DateAdd(DateInterval.Day, 1-WeekDay(Today), Today())
+
