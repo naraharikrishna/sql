@@ -1,0 +1,4 @@
+Declare @JoinedOn Date 
+Declare @RequestedDate Date
+Select JoinedOn , RequestedDate ,DATEDIFF(YEAR, [JoinedOn], [RequestedDate]) -  (CASE WHEN DATEADD(YEAR, 
+           DATEDIFF(YEAR,[JoinedOn], [RequestedDate]), [JoinedOn]) > [RequestedDate] THEN 1 ELSE 0 END) as NumberofYears;
