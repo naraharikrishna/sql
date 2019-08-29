@@ -1,0 +1,6 @@
+ select * FROM @dispatch_list
+  WHERE 
+  [@dispatch_list].[clearinDobie]=@PrintClearIn
+  OR
+  ([@dispatch_list].[clearinDobie]!=@PrintClearIn AND @PrintClearIn=1) ;  
+  
