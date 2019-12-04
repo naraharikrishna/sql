@@ -1,0 +1,154 @@
+
+CREATE FUNCTION [dbo].[fnProperCase]
+	(@InputString NVARCHAR(2000))
+RETURNS NVARCHAR(2000)
+AS
+	BEGIN
+		DECLARE
+			@TheResult NVARCHAR(2000) = SPACE(0)
+		  , @Counter INT
+		  , @TheLength INT
+		  , @TheString NVARCHAR(2000)
+		  , @Letter1 BIT
+		  , @Letter2 BIT
+		  , @TTS NVARCHAR(5)
+		  , @AC1 SMALLINT
+		  , @AC2 SMALLINT ;
+
+		SET @Counter = 1 ;
+		SET @TheString = LTRIM(RTRIM(@InputString)) ;
+		SET @TheLength = LEN(@TheString) ;
+
+		--DECLARE @TheDetail AS TABLE
+		--(
+		--[Input] NVARCHAR(2000)
+		--, [CleanInput] NVARCHAR(2000)
+		--, [Counter] INT
+		--, [Length] INT
+		--, [TempString] NVARCHAR(5)
+		--, [Code1] INT
+		--, [Code2] INT
+		--, [Result] NVARCHAR(2000))
+
+		WHILE @Counter <= @TheLength
+			BEGIN
+				SET @TTS = SUBSTRING(@TheString, @Counter, 2) ;
+				SET @AC1 = ASCII(SUBSTRING(@TTS, 1, 1)) ;
+				SET @AC2 = ISNULL(ASCII(SUBSTRING(@TTS, 2, 1)), 32) ;
+
+				SET @Letter1 = CASE
+								   WHEN @AC1 BETWEEN 65 AND 90 THEN 1 --Upper Case
+								   WHEN @AC1 BETWEEN 97 AND 122 THEN 1 --Lower Case
+								   WHEN @AC1 BETWEEN 192 AND 223 THEN 1 --Upper Case
+								   WHEN @AC1 BETWEEN 224 AND 253 THEN 1 --Lower Case
+								   ELSE 0
+							   END ;
+
+				SET @Letter2 = CASE
+								   WHEN @AC2 BETWEEN 65 AND 90 THEN 1 --Upper Case
+								   WHEN @AC2 BETWEEN 97 AND 122 THEN 1 --Lower Case
+								   WHEN @AC1 BETWEEN 192 AND 223 THEN 1 --Upper Case
+								   WHEN @AC1 BETWEEN 224 AND 253 THEN 1 --Lower Case
+								   ELSE 0
+							   END ;
+
+				SET @TTS = CASE
+							   WHEN @Letter1 = 0 THEN CASE WHEN @Letter2 = 0 THEN CHAR(@AC1) END
+						   END ;
+				SET @TTS = CASE
+							   WHEN @Letter1 = 1 THEN CASE WHEN @Letter2 = 0 THEN LOWER(CHAR(@AC1)) ELSE @TTS END
+							   ELSE @TTS
+						   END ;
+				SET @TTS = CASE
+							   WHEN @Letter1 = 0 THEN CASE
+														  WHEN @Letter2 = 1 THEN CONCAT(CHAR(@AC1), UPPER(CHAR(@AC2)))
+														  ELSE @TTS
+													  END
+							   ELSE @TTS
+						   END ;
+				SET @TTS = CASE
+							   WHEN @Letter1 = 1 THEN CASE WHEN @Letter2 = 1 THEN LOWER(CHAR(@AC1)) ELSE @TTS END
+							   ELSE @TTS
+						   END ;
+
+				SET @TheResult = CONCAT(@TheResult, CASE WHEN @Counter = 1 THEN UPPER(@TTS) ELSE @TTS END) ;
+
+				SELECT @Counter = CASE
+									  WHEN @Letter1 = 0 THEN CASE WHEN @Letter2 = 1 THEN (@Counter + 2) ELSE (@Counter + 1) END
+									  ELSE (@Counter + 1)
+								  END ;
+			END ;
+
+
+		SET @TheResult = REPLACE(@TheResult, ' Iii', ' III') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' Ii', ' II') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' Iv', ' IV') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' I i i', ' III') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' I i', ' II') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' I v', ' IV') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Po ', 'PO ') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'C\O ', 'c/o ') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'C/O ', 'c/o ') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'RFD ', 'RR ') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Rr ', 'RR ') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' Ne ', ' N E ') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' Se ', ' S E ') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' Nw', ' N W') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' Sw', ' S W') ;
+
+		SET @TheResult = REPLACE(@TheResult, ' Vfw ', ' VFW ') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mca', 'McA') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mcb', 'McB') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mcc', 'McC') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mcd', 'McD') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mcg', 'McG') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mck', 'McK') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mcl', 'McL') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mcm', 'McM') ;
+
+		SET @TheResult = REPLACE(@TheResult, 'Mcn', 'McN') ;
+
+		IF LEN(@TheResult) < 1
+			BEGIN
+				SET @TheResult = NULL ;
+			END ;
+
+		--INSERT INTO @TheDetail
+		--( [Input] 
+		--, [CleanInput] 
+		--, [Counter] 
+		--, [Length] 
+		--, [TempString] 
+		--, [Code1] 
+		--, [Code2] 
+		--, [Result])
+		--SELECT @InputString as InputString, @TheString as TheString, @Counter as TheCounter, @TheLength as TheLength,  @TTS AS TargetString, @AC1 as Code1, @AC2 as Code2, @TheResult as TheResult;
+		--END
+		--SELECT * FROM @TheDetail
+
+		RETURN @TheResult ;
+
+	--SELECT @InputString as InputString, @Counter as TheCounter, @TheLength as TheLength, @TheString as TheString, @TTS AS TargetString, @AC1 as Code1, @AC2 as Code2, @TheResult as TheResult;
+	END ;
