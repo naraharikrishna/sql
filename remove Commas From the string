@@ -1,0 +1,47 @@
+
+Create FUNCTION [dbo].[f_remove_comma_from_string] (@Text VARCHAR(MAX), @Delimiter VARCHAR(1))
+RETURNS VARCHAR(MAX)
+AS
+
+--DECLARE @Text VARCHAR(MAX) = '"alvaro vaca, jr",NATIONAL POSTAL MAIL HAN,089247672,78008327601,MASTERCARD,Approved,716183,12/17/2015 14:49:03,"NATIONAL POSTAL MAIL HAN",NATIONAL POSTAL MAIL HAN,0817,B50326-01,825305676884,1293046258,42.00,USD,############4568,Purchase,,GAMORCH,100,00'
+--DECLARE @Delimiter VARCHAR(1) = ','
+
+BEGIN
+	DECLARE @TextStr VARCHAR(MAX)
+    DECLARE @firstQPos INT
+	DECLARE @SecondQPos INT
+	DECLARE @DelPos INT
+	DECLARE	@Ret VARCHAR(MAX)
+
+	SELECT @TextStr = @Text
+
+StartProcess:
+	SELECT @firstQPos = CHARINDEX('"', @TextStr, 1)
+	SELECT @SecondQPos = CHARINDEX('"', @TextStr, @firstQPos + 1) 
+	SELECT @DelPos = CHARINDEX(',', @TextStr, @firstQPos + 1)  
+
+	IF @firstQPos = 0 
+		BEGIN 
+			SELECT @Ret = @TextStr
+		END
+	ELSE
+		BEGIN
+			IF @DelPos > @firstQPos 
+				BEGIN
+					SELECT @TextStr = LEFT(@TextStr, @firstQPos - 1) + RIGHT(@TextStr, LEN(@TextStr) - @firstQPos)
+					IF @DelPos > @SecondQPos 
+						BEGIN 
+							SELECT @TextStr = LEFT(@TextStr, @SecondQPos - 2) + RIGHT(@TextStr, LEN(@TextStr) - @SecondQPos + 1) 
+							GOTO StartProcess
+						END
+					ELSE
+						BEGIN  
+							SELECT @TextStr = LEFT(@TextStr, @DelPos - 2) + RIGHT(@TextStr, LEN(@TextStr) - @DelPos + 1) 
+							SELECT @TextStr = LEFT(@TextStr, @SecondQPos - 3) + RIGHT(@TextStr, LEN(@TextStr) - @SecondQPos + 2) 
+							GOTO StartProcess
+						END
+				END
+		END		
+
+	RETURN @Ret
+END
