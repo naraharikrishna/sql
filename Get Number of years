@@ -1,0 +1,30 @@
+
+   --HK 11/08/2019
+ Create FUNCTION [dbo].[fn_get_no_of_years](@datefrom DATE,@dateto DATE)
+  RETURNS @YeartoDate TABLE (
+    Years INT,
+    Months INT ,
+    Days Int 
+    ,Totalyears int ) 
+AS
+BEGIN
+
+Declare @datetoVar int,@datefromVar int,   @daysBM int,     @years int,  @months int,  @days int  
+
+set @datetoVar = convert(nvarchar(10),@dateto,112)  
+set @datefromVar = convert(Nvarchar(10),@datefrom,112)  
+set @years = ( @datetoVar - @datefromVar)/10000  
+set @months =(1200 + (month(@dateto)- month(@datefrom))*100 + day(@dateto) - day(@datefrom))/100 %12  
+set @daysBM = day(dateadd(d,-1,left(convert(Nvarchar(10),dateadd(M,1,@datefrom),112),6)+'01'))  
+set @days = (sign(day(@dateto) - day(@datefrom))+1)/2 * (day(@dateto) - day(@datefrom))+ (sign(day(@datefrom) - day(@dateto))+1)/2 * (@daysBM - day(@datefrom) + day(@dateto))  
+
+INSERT @YeartoDate
+( [Years], [Months], [Days])
+SELECT @years,@months,@days
+
+UPDATE @YeartoDate SET [@YeartoDate].[Totalyears] = CASE WHEN [@YeartoDate].[Months]>0 OR [@YeartoDate].[Days]>0 THEN [@YeartoDate].[Years]+1
+                                                    ELSE [@YeartoDate].[Years] END
+                  
+RETURN
+
+  END
