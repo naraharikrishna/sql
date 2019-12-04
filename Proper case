@@ -1,0 +1,22 @@
+ALTER function [dbo].[f_Proper_Case]
+    (
+        @String nvarchar(max) -- Variable for string
+    )
+returns nvarchar(256)
+    begin
+        declare @ReturnValue nvarchar(256)
+        if @String is null
+            begin
+                return ( @String )
+
+            end
+
+        select
+            @ReturnValue = left(ltrim(rtrim(@String)), 1)
+        select
+            @ReturnValue = concat(@ReturnValue, lower(substring(@String, 2, ( len(@String) - 1 ))))
+
+
+
+        return ( @ReturnValue )
+    end
