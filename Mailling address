@@ -1,0 +1,99 @@
+
+		SELECT 
+			e.[id] AS [EmployeeID] 
+			,e.[member_num] 
+			,e.[urnumber] 
+			,e.[last_name]
+			,'XXX-XX-' + RIGHT(RTRIM(e.[SSN]), 4) AS [SSN]
+			,UPPER(ISNULL(e.[last_name], '') + ', ' + ISNULL(e.[first_name], '') + ISNULL(' ' + e.[middle_name_or_initial], '')) AS [Name]
+			,UPPER(ISNULL(e.[first_name], '') + ISNULL(' ' + e.[middle_name_or_initial], '') + ISNULL(' ' + e.[last_name], '')) As [NiceName]				
+			,[StatusID] = ISNULL([dbo].fn_Status_as_of(e.[id],GETDATE()),(SELECT [id] FROM tblMemberStatus WHERE member_status_cd = 'UK'))	
+			,e.[birth_date]
+			,e.[hire_date]
+			,e.[seniority_date] --Use for NCS
+			,e.[home_phone]
+			,e.[origination_date]
+			,e.[sex]
+			,e.[Con]
+			,e.[region_id]
+			,[AddressLine1] = 
+				CASE ISNULL(LTRIM(RTRIM(e.[address1])),'')
+					WHEN '' THEN UPPER(ISNULL(LTRIM(RTRIM(e.[address2])),'')) --Use Address2 when there isn't an Address1.
+					ELSE UPPER(LTRIM(RTRIM(e.[address1])))
+				END
+			,[AddressLine2] = 
+				CASE ISNULL(LTRIM(RTRIM(e.[address1])),'')
+					WHEN '' --Address2 was used for AddressLine1, so we will pass City, State and Zip.
+						THEN UPPER(ISNULL((LTRIM(RTRIM(e.[city])) + ', '),'') 
+									+ ISNULL((LTRIM(RTRIM(e.[state])) + ' '),'') 
+									+ ISNULL(LTRIM(RTRIM(e.[zip])),''))
+					ELSE --Pass Address2, if there is one.
+						CASE ISNULL(LTRIM(RTRIM(e.[address2])),'')
+							WHEN '' --No Address2, so we will pass City, State and Zip.
+								THEN UPPER(ISNULL((LTRIM(RTRIM(e.[city])) + ', '),'') 
+									+ ISNULL((LTRIM(RTRIM(e.[state])) + ' '),'') 
+									+ ISNULL(LTRIM(RTRIM(e.[zip])),''))
+							ELSE UPPER(ISNULL(LTRIM(RTRIM(e.[address2])),''))
+						END
+				END
+			,[AddressLine3] = 
+				CASE ISNULL(LTRIM(RTRIM(e.[address1])),'')
+					WHEN '' THEN '' --Address is already complete in 2 lines.
+					ELSE -- Address1 was used; was Address2 use too?
+						CASE ISNULL(LTRIM(RTRIM(e.[address2])),'')
+							WHEN '' THEN '' --Address is already complete in 2 lines.
+							ELSE UPPER(ISNULL((LTRIM(RTRIM(e.[city])) + ', '),'') 
+									+ ISNULL((LTRIM(RTRIM(e.[state])) + ' '),'') 
+									+ ISNULL(LTRIM(RTRIM(e.[zip])),''))
+						END
+				END	
+			,[MailingAddressLine1] = 
+				CASE ISNULL(LTRIM(RTRIM(e.[address1])),'')
+					WHEN '' THEN UPPER(ISNULL(LTRIM(RTRIM(e.[address2])),'')) --Use Address2 when there isn't an Address1.
+					ELSE UPPER(LTRIM(RTRIM(e.[address1])))
+				END
+			,[MailingAddressLine2] = CASE ISNULL(LTRIM(RTRIM(e.[address1])),'')
+					WHEN '' --Address2 was used for AddressLine1, so we will pass City, State and Zip.
+						THEN UPPER(ISNULL((LTRIM(RTRIM(e.[city])) + ', '),'') 
+									+ ISNULL((LTRIM(RTRIM(e.[state])) + ' '),'') 
+									+ ISNULL(LTRIM(RTRIM(e.[zip])),''))
+					ELSE --Pass Address2, if there is one.
+						CASE ISNULL(LTRIM(RTRIM(e.[address2])),'')
+							WHEN '' --No Address2, so we will pass City, State and Zip.
+								THEN UPPER(ISNULL((LTRIM(RTRIM(e.[city])) + ', '),'') 
+									+ ISNULL((LTRIM(RTRIM(e.[state])) + ' '),'') 
+									+ ISNULL(LTRIM(RTRIM(e.[zip])),''))
+							ELSE UPPER(ISNULL(LTRIM(RTRIM(e.[address2])),''))
+						END
+				END
+			,[MailingAddressLine3] =  CASE ISNULL(LTRIM(RTRIM(e.[address1])),'')
+					WHEN '' THEN '' --Address is already complete in 2 lines.
+					ELSE -- Address1 was used; was Address2 use too?
+						CASE ISNULL(LTRIM(RTRIM(e.[address2])),'')
+							WHEN '' THEN '' --Address is already complete in 2 lines.
+							ELSE UPPER(ISNULL((LTRIM(RTRIM(e.[city])) + ', '),'') 
+									+ ISNULL((LTRIM(RTRIM(e.[state])) + ' '),'') 
+									+ ISNULL(LTRIM(RTRIM(e.[zip])),''))
+						END
+				END	
+			,e.[address1]
+			,e.[address2]
+			,e.[city]
+			,ISNULL(e.[state],'') AS [state]
+			,ISNULL(e.[zip],'') AS [zip]
+			,e.[bad_address_ind]
+			,[IsGoodAddress] = 
+				CASE LTRIM(RTRIM(ISNULL(e.[bad_address_ind],'')))
+					WHEN '' THEN 1
+					ELSE 0
+					END
+			,ISNULL(LTRIM(RTRIM(COALESCE(e.[home_phone], e.[work_phone_and_extension], e.[cell_phone]))),'') AS [Phone]
+			,ISNULL(e.[do_not_call],0) AS [do_not_call] --new 2/7/12
+			,e.[email_address] AS [Email]
+			,e.[reg_voter] AS [IsRegisteredVoter]
+			,ISNULL(e.[party_affiliation],'') AS [party_affiliation]
+			,e.[paid_through_date]							
+		FROM dbo.tblEmployee AS e
+		WHERE e.id = @MemberID
+		
+		
