@@ -1,0 +1,19 @@
+Create FUNCTION [dbo].fn_RemoveCharacters (@text varchar(30))
+RETURNS VARCHAR(30)
+AS
+BEGIN
+declare @index as int 
+declare @newtexval as varchar(30)
+set @index = (select PATINDEX('%[A-Z.-/?)(-]%', @text))
+if (@index =0)
+begin 
+return @text
+end
+else
+begin 
+set @newtexval  = REPLACE((select STUFF ( @text , @index , 1 , '' )),' ','')
+return dbo.fn_RemoveCharacters(@newtexval)
+end
+return 0
+END
+GO
