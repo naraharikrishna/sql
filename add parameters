@@ -1,0 +1,39 @@
+
+DECLARE @AddHomePhone bit =0
+,@Headings BIT  =1
+,@AddCellPhone BIT=0
+,@AddPTD  BIT=0
+,@Add15Digit    BIT=1
+
+
+DECLARE @label NVARCHAR(max)
+DECLARE @homephonelabel NVARCHAR(max)
+DECLARE @AddCellPhonelabel NVARCHAR(max)
+DECLARE @AddPTDlabel NVARCHAR(max)
+DECLARE @Add15Digitlabel NVARCHAR(max)
+
+
+DECLARE @sub NVARCHAR(max)
+
+SELECT @label = CASE  WHEN  @AddHomePhone=1 OR @AddCellPhone=1 OR @AddPTD=1 OR @Add15Digit=1 THEN 'add: ' ELSE '' END
+
+SELECT @label  
+
+SELECT @homephonelabel= IIF(@AddHomePhone=1 ,'home phone',SPACE(0))
+SELECT @AddCellPhonelabel=   IIF(@AddCellPhone=1 ,'cell phone',SPACE(0))
+
+SELECT @AddPTDlabel= IIF(@AddPTD=1 ,'PTD',SPACE(0))
+SELECT @Add15Digitlabel=   IIF(@Add15Digit=1 ,'15 digit code', SPACE(0))
+
+
+SELECT @sub  = 	   CONCAT(IIF(LEN(ISNULL(@homephonelabel, SPACE(0))) = 0, SPACE(0), CONCAT(@homephonelabel, CHAR(44), SPACE(1))),
+  IIF(LEN(ISNULL(@AddCellPhonelabel, SPACE(0))) = 0, SPACE(0), CONCAT(@AddCellPhonelabel, CHAR(44), SPACE(1)))
+    ,IIF(LEN(ISNULL(@AddPTDlabel, SPACE(0))) = 0, SPACE(0), CONCAT(@AddPTDlabel, CHAR(44), SPACE(1)))
+    ,IIF(LEN(ISNULL(@Add15Digitlabel, SPACE(0))) = 0, SPACE(0), @Add15Digitlabel)
+ ) 
+
+   SELECT @sub
+
+        SELECT    REVERSE(SUBSTRING(  REVERSE(@sub),   PATINDEX('%[A-Za-z0-9]%',REVERSE(@sub)), LEN(@sub) - (PATINDEX('%[A-Za-z0-9]%',REVERSE(@sub)) - 2) ) )
+
+SELECT @homephonelabel   ,LEN(@homephonelabel),@AddCellPhonelabel,LEN(@AddCellPhonelabel)   ,@AddPTDlabel, LEN(@AddPTDlabel) ,@Add15Digitlabel , LEN(@Add15Digitlabel)
